@@ -24,8 +24,6 @@ def allowed_file(filename):
 def index():
     return render_template("index.html")
 
-# THUMBNAIL ANALYSIS - GEMINI
-
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     if "thumbnail" not in request.files:
@@ -50,7 +48,6 @@ def analyze():
         ctr_prediction = predict_ctr(image_analysis, text_analysis)
         heatmap_analysis = analyze_heatmap(filepath)
 
-# AI analysis should not stop the complete analysis
         try:
             ai_result = analyze_thumbnail(filepath)
             gemini_text = ai_result.get("detected_text", "").strip()
@@ -87,7 +84,6 @@ def analyze():
             "error": str(e)
         }), 500
 
-# MANUAL THUMBNAIL BUILDER - PILLOW
 @app.route("/api/build", methods=["POST"])
 def build():
     if "thumbnail" not in request.files:
@@ -101,7 +97,6 @@ def build():
     if not allowed_file(file.filename):
         return jsonify({"error": "Invalid thumbnail format"}), 400
 
-    # Thumbnail text settings
     text = request.form.get("text","").strip()
 
     try:
@@ -112,13 +107,11 @@ def build():
     text_color = request.form.get("text_color", "#FFFFFF")
     position = request.form.get("position", "center")
 
-    # Save thumbnail
     extension = file.filename.rsplit(".",    1)[1].lower()
     filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join(UPLOAD_FOLDER, secure_filename(filename))
     file.save(filepath)
 
-    # Save user's image
     person_path = None
     person_file = request.files.get("person")
 
@@ -131,7 +124,6 @@ def build():
         person_path = os.path.join(UPLOAD_FOLDER,secure_filename(person_filename))
         person_file.save(person_path)
 
-    # Build thumbnail
     try:
         output_path = build_thumbnail(filepath, text, font_size, text_color, position, person_path)
         from datetime import datetime
@@ -153,7 +145,6 @@ def build():
         print("Builder error:", str(e))
         return jsonify({"error": str(e)}), 500
 
-# AI THUMBNAIL GENERATION - CLOUDFLARE FLUX
 @app.route("/api/generate-thumbnail", methods=["POST"])
 def generate_thumbnail():
     data = request.get_json()
@@ -176,7 +167,6 @@ def generate_thumbnail():
         print("Cloudflare generation error:",str(e))
         return jsonify({"error": str(e)}), 500
 
-# AUTHENTICATION / COLLECTION PAGES
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
     if request.method == "GET":
