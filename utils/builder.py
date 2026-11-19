@@ -56,14 +56,12 @@ def get_fitted_text(draw, text, requested_size, max_width):
 
 def build_thumbnail(image_path, text, font_size, text_color, position, person_image_path=None):
 
-    # OPEN AI IMAGE
     image = Image.open(image_path).convert("RGB")
     target_width = 1280
     target_height = 720
     target_ratio = target_width / target_height
     image_ratio = image.width / image.height
 
-    # CROP TO 16:9
     if image_ratio > target_ratio:
         new_width = int(image.height * target_ratio)
         left = (image.width - new_width) // 2
@@ -76,38 +74,31 @@ def build_thumbnail(image_path, text, font_size, text_color, position, person_im
 
     image = image.resize((target_width, target_height),Image.LANCZOS)
 
-    # ADD USER IMAGE - OPTIONAL
     person_width = 0
     person_height = 0
 
     if person_image_path and os.path.exists(person_image_path):
         person = Image.open(person_image_path).convert("RGBA")
 
-        # Crop transparent/background area
         bbox = person.getbbox()
 
         if bbox:
             person = person.crop(bbox)
 
-        # Make person larger
         person.thumbnail((600, 680))
         person_width = person.width
         person_height = person.height
 
-        # Bottom-left placement
         person_x = 35
         person_y = (target_height - person.height - 20)
         image.paste(person,(person_x, person_y),person)
 
-    # TEXT - OPTIONAL
     text = (text or "").strip()
 
-    # Only add text if user entered a headline
     if text:
         draw = ImageDraw.Draw(image)
         margin = 45
 
-        # Give text more space when no person exists
         if person_width:
             max_text_width = 650
         else:
@@ -116,7 +107,6 @@ def build_thumbnail(image_path, text, font_size, text_color, position, person_im
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
-        # TEXT POSITION
         if position == "top":
             x = ( target_width - text_width) // 2
             y = 45
@@ -149,7 +139,6 @@ def build_thumbnail(image_path, text, font_size, text_color, position, person_im
             x = margin
             y = margin
 
-        # TEXT BACKGROUND
         padding_x = 18
         padding_y = 12
 
@@ -163,13 +152,10 @@ def build_thumbnail(image_path, text, font_size, text_color, position, person_im
         image = Image.alpha_composite(image.convert("RGBA"), overlay)
         draw = ImageDraw.Draw(image)
 
-        # TEXT SHADOW
         draw.multiline_text((x + 5, y + 5), wrapped_text, font=font, fill="black", spacing=8, stroke_width=4, stroke_fill="black")
 
-        # MAIN TEXT
         draw.multiline_text((x, y), wrapped_text, font=font, fill=text_color, spacing=8, stroke_width=3, stroke_fill="black")
 
-    # SAVE FINAL THUMBNAIL
     filename = f"built_{uuid.uuid4().hex}.jpg"
 
     output_path = os.path.join(OUTPUT_FOLDER,filename)
