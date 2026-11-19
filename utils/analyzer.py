@@ -14,7 +14,7 @@ if os.name == "nt":
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 else:
     pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract")
-# IMAGE ANALYSIS
+
 def analyze_image(image_path):
     image = Image.open(image_path).convert("RGB")
     width, height = image.size
@@ -43,7 +43,6 @@ def analyze_image(image_path):
         "resolution": f"{width}x{height}"
     }
 
-# OCR
 def run_ocr(image):
     data = pytesseract.image_to_data(image,config="--oem 3 --psm 11", output_type=pytesseract.Output.DICT)
     words = []
@@ -57,7 +56,7 @@ def run_ocr(image):
             confidence = 0
 
         if word and confidence >= 30:
-            # Remove very short OCR noise
+          
             if len(word) >= 2:
                 words.append(word)
                 confidences.append(confidence)
@@ -79,7 +78,7 @@ def detect_text(image_path):
         }
 
     try:
-        # Resize large images to reduce memory usage
+       
         height, width = image.shape[:2]
         max_dimension = 1280
 
@@ -145,7 +144,6 @@ def detect_text(image_path):
             "error": str(e)
         }
 
-# CTR PREDICTION
 def predict_ctr(image_analysis, text_analysis):
     quality_score = image_analysis.get("quality_score", 0)
     brightness = image_analysis.get("brightness", 0)
@@ -182,7 +180,6 @@ def predict_ctr(image_analysis, text_analysis):
         "message": "Estimated using thumbnail visual features"
     }
 
-# HEATMAP ANALYSIS
 def analyze_heatmap(image_path):
     image = cv2.imread(image_path)
 
