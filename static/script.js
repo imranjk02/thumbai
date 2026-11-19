@@ -1,4 +1,3 @@
-// THUMBNAIL ANALYZER
 const form = document.getElementById("uploadForm");
 const input = document.getElementById("thumbnail");
 const preview = document.getElementById("previewContainer");
@@ -81,7 +80,6 @@ if (form) {
     });
 }
 
-// USER IMAGE PREVIEW
 const personImage = document.getElementById("personImage");
 const personPreview = document.getElementById("personPreview");
 const personPreviewImage = document.getElementById("personPreviewImage");
@@ -101,8 +99,6 @@ if (personImage) {
     });
 }
 
-// AI THUMBNAIL BUILDER
-// CLOUDFLARE FLUX + USER IMAGE + PILLOW TEXT
 const promptForm = document.getElementById("promptForm");
 if (promptForm) {
     promptForm.addEventListener("submit", async (e) => {
@@ -131,7 +127,7 @@ if (promptForm) {
         status.textContent = "AI is creating your thumbnail...";
 
         try {
-            // STEP 1 - GENERATE AI IMAGE WITH CLOUDFLARE
+            
             const generateResponse = await fetch(
                 "/api/generate-thumbnail",
                 {
@@ -148,7 +144,6 @@ if (promptForm) {
             console.log("Cloudflare image generated:",generatedData.image_url);
             status.textContent = "AI image created. Building final thumbnail...";
 
-            // STEP 2 - DOWNLOAD GENERATED AI IMAGE
             const imageResponse = await fetch(generatedData.image_url);
             if (!imageResponse.ok) {
                 throw new Error("Could not load generated image.");
@@ -156,8 +151,6 @@ if (promptForm) {
             const imageBlob = await imageResponse.blob();
             const generatedFile = new File([imageBlob],"ai-thumbnail.jpg",{type: imageBlob.type || "image/jpeg"});
 
-            // STEP 3 - SEND AI IMAGE + USER IMAGE + TEXT
-            // TO /api/build
             const buildFormData = new FormData();
             buildFormData.append("thumbnail",generatedFile);
             if (personFile) {buildFormData.append("person",personFile);}
@@ -170,14 +163,12 @@ if (promptForm) {
 buildFormData.append("prompt", prompt);
 buildFormData.append("aspect_ratio", aspectRatio);
 
-            // STEP 4 - BUILD FINAL THUMBNAIL
             const buildResponse = await fetch("/api/build",{ method: "POST", body: buildFormData});
             const builtData = await buildResponse.json();
             if (!buildResponse.ok || builtData.error) {
                 throw new Error(builtData.error || "Thumbnail building failed");
             }
 
-            // STEP 5 - SHOW FINAL THUMBNAIL
             document.getElementById("promptImage").src = builtData.image_url;
             document.getElementById("promptDownload").href = builtData.image_url;
             document.getElementById("promptPreview").style.display = "block";
@@ -196,7 +187,6 @@ buildFormData.append("aspect_ratio", aspectRatio);
     });
 }
 
-// PROMPT EXAMPLES
 function setPrompt(text) {
     const prompt = document.getElementById("thumbnailPrompt");
     if (prompt) {prompt.value = text;}
