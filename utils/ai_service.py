@@ -9,7 +9,6 @@ from google import genai
 from PIL import Image
 load_dotenv()
 
-# GEMINI - ANALYSIS
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def analyze_thumbnail(image_path):
@@ -66,7 +65,6 @@ def analyze_thumbnail(image_path):
         }
     }
 
-# CLOUDFLARE FLUX - BUILDER
 def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
     print("Starting Cloudflare thumbnail generation...")
 
@@ -87,7 +85,6 @@ def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
         )
         headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
 
-        # Add thumbnail-specific instructions
         final_prompt = f"""
             Create a professional YouTube thumbnail.
             {prompt}
@@ -118,7 +115,6 @@ def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
 
         image_base64 = data["result"]["image"]
 
-        # Decode Base64
         image_bytes = base64.b64decode(image_base64)
 
         output_folder = "static/uploads"
@@ -130,7 +126,6 @@ def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
         with open(temp_path, "wb") as image_file:
             image_file.write(image_bytes)
 
-        # CONVERT TO 16:9 THUMBNAIL
         image = Image.open(temp_path).convert("RGB")
         target_width = 1280
         target_height = 720
@@ -138,13 +133,11 @@ def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
         image_ratio = image.width / image.height
 
         if image_ratio > target_ratio:
-            # Image is too wide
             new_width = int(image.height * target_ratio)
             left = (image.width - new_width) // 2
             image = image.crop((left, 0, left + new_width, image.height))
 
         else:
-            # Image is too tall
             new_height = int(image.width / target_ratio)
             top = (image.height - new_height) // 2
             image = image.crop((0, top, image.width, top + new_height))
@@ -154,7 +147,6 @@ def generate_thumbnail_from_prompt(prompt, aspect_ratio="16:9"):
         output_path = os.path.join(output_folder, filename)
         image.save(output_path, "JPEG", quality=95)
 
-        # Remove temporary file
         if os.path.exists(temp_path):
             os.remove(temp_path)
         print("Cloudflare thumbnail generated successfully.")
